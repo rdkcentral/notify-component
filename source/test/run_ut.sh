@@ -77,6 +77,9 @@ cd ..
 log "INFO" "Start Running UT Script..."
 # Run autogen.sh
 log "INFO" "Running autogen.sh..."
+if [ ! -x ./autogen.sh ]; then
+    chmod +x ./autogen.sh
+fi
 if ./autogen.sh; then
     log "INFO" "autogen.sh executed successfully."
 else
