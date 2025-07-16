@@ -77,6 +77,7 @@ cd ..
 log "INFO" "Start Running UT Script..."
 # Run autogen.sh
 log "INFO" "Running autogen.sh..."
+cd ./notify_comp
 if ./autogen.sh; then
     log "INFO" "autogen.sh executed successfully."
 else
