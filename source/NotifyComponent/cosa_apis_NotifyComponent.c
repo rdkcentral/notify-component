@@ -480,6 +480,126 @@ UINT PA_to_Mask(char* PA_Name)
 	return return_val;
 }
 
+UINT get_PA_Bits(const char *param_name)
+{
+#ifndef DYNAMIC_Notify
+
+    UINT i;
+
+    for(i=0;i<Ncount;i++)
+    {
+        if(param_name && strstr(Notify_param_arr[i].param_name, param_name))
+        {
+            CcspNotifyCompTraceInfo((" \n Notification : Parameter %s found in the list \n", param_name));
+            return Notify_param_arr[i].Notify_PA;
+        }
+    }
+
+#else
+
+    PNotify_param temp=head;
+
+    while(temp!=NULL)
+    {
+        if(param_name && strstr(temp->param_name, param_name))
+        {
+            CcspNotifyCompTraceInfo((" \n Notification : Parameter %s found in the list \n", param_name));
+            return temp->Notify_PA;
+        }
+        temp = temp->next;
+    }
+
+#endif
+    return 0;
+}
+
+static void valueChangeReceiveHandler(rbusHandle_t handle, rbusEvent_t const* event, rbusEventSubscription_t* subscription)
+{
+    int rc = RBUS_ERROR_SUCCESS;
+
+    CcspNotifyCompTraceInfo((" Notification: Received ValueChange event for param %s\n", event->name));
+
+    if(subscription->userData)
+    {
+        Notify_To_PAs(get_PA_Bits(event->name), subscription->userData);
+    }
+
+    /* Unsubscribing*/
+    if (handle)
+    {
+        rbusEvent_Unsubscribe(handle, event->name);
+        if(rc != RBUS_ERROR_SUCCESS)
+        {
+            CcspNotifyCompTraceInfo(("Unsubscribing failed with err:%d\n", rc));
+        }
+    }
+}
+
+void
+Validate_Param_Value(char* param_name, char* MsgStr)
+{
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    rbusHandle_t rbus_handle = (rbusHandle_t)(bus_info->rbus_handle);
+    char pString[MAX_SIZE]={0};
+    rbusValue_t value;
+    char* st;
+    errno_t rc = -1;
+
+    if(strlen(MsgStr) < MAX_SIZE)
+    {
+        rc = strcpy_s(pString, MAX_SIZE, MsgStr);
+        if (rc != EOK)
+        {
+            ERR_CHK(rc);
+            return;
+        }
+
+        pString[sizeof(pString)-1] = '\0';
+    }
+
+    char *p_param_name = strtok_r(pString, ",", &st);
+    char *p_write_id = strtok_r(NULL, ",", &st);
+    char *p_new_val = strtok_r(NULL, ",", &st);
+
+    if (p_new_val == NULL) p_new_val = "";
+
+    CcspNotifyCompTraceInfo(("\nParameter Name = %s New Value = %s WriteID: %s \n", p_param_name, p_new_val, p_write_id));
+
+    rc = rbus_get(rbus_handle, param_name, &value);
+
+    if (rc == RBUS_ERROR_SUCCESS)
+    {
+        char *p_rbus_val = rbusValue_ToString(value, NULL, 0);
+
+        if (p_rbus_val == NULL) p_rbus_val = "";
+
+        CcspNotifyCompTraceInfo((" \n Parameter = %s GET Value = %s \n", param_name, p_rbus_val));
+
+        if ((strcmp(p_rbus_val, p_new_val) != 0))
+        {
+            /* New value and rbus_get vaules are not same, going for value change subsciption */
+            rc = rbusEvent_Subscribe(rbus_handle, param_name, valueChangeReceiveHandler, MsgStr, 0);
+
+            if (rc != RBUS_ERROR_SUCCESS)
+            {
+                CcspNotifyCompTraceInfo((" Parameter Name = %s subsciption failed!\n", param_name));
+            }
+            else
+            {
+                CcspNotifyCompTraceInfo((" Parameter Name %s subscribed\n", param_name));
+            }
+        }
+        else
+        {
+            Notify_To_PAs(get_PA_Bits(param_name), MsgStr);
+        }
+    }
+    else
+    {
+        CcspNotifyCompTraceInfo((" \n Notification : RBUS get failed with err %d\n", rc));
+    }
+}
+
 /* CID: 56982 & 61465 Missing return statement & type specifier*/
 void 
 Find_Param(char* param_name, char* MsgStr)
@@ -495,7 +615,14 @@ Find_Param(char* param_name, char* MsgStr)
 		if(param_name && strstr(Notify_param_arr[i].param_name, param_name))
 		{
 			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s found in the list \n", param_name));
-			Notify_To_PAs(Notify_param_arr[i].Notify_PA,MsgStr);	
+            if(strncmp(param_name, "Device.", 7) == 0)
+            {
+                Validate_Param_Value(param_name, MsgStr);
+            }
+            else
+            {
+                Notify_To_PAs(get_PA_Bits(param_name), MsgStr);
+            }
 			break;
 		}
 	}
@@ -517,7 +644,14 @@ Find_Param(char* param_name, char* MsgStr)
 		if(param_name && strstr(temp->param_name,param_name))
 		{
 			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s found in the list \n", param_name));
-			Notify_To_PAs(temp->Notify_PA, MsgStr); 
+            if(strncmp(param_name, "Device.", 7) == 0)
+            {
+                Validate_Param_Value(param_name, MsgStr);
+            }
+            else
+            {
+                Notify_To_PAs(get_PA_Bits(param_name), MsgStr);
+            }
 			found = 1;
 			break;  
 		}

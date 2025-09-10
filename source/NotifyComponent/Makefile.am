@@ -21,5 +21,5 @@ bin_PROGRAMS = notify_comp
 
 notify_comp_CPPFLAGS = -I$(top_srcdir)/source/NotifyComponent -I=${includedir}/ccsp
 notify_comp_CFLAGS = -DFEATURE_SUPPORT_RDKLOG $(DBUS_CFLAGS)
-notify_comp_LDFLAGS = -lccsp_common -lrdkloggers -lsysevent -lsyscfg -lulog -lsecure_wrapper -lrt -lpthread $(DBUS_LIBS)
+notify_comp_LDFLAGS = -lccsp_common -lrdkloggers -lrbus -lsysevent -lsyscfg -lulog -lsecure_wrapper -lrt -lpthread $(DBUS_LIBS)
 notify_comp_SOURCES = cosa_apis_NotifyComponent.c plugin_main.c ssp_action.c ssp_messagebus_interface.c ssp_main.c dm_pack_datamodel.c
