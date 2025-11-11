@@ -49,3 +49,4 @@ notify_comp_gtest_bin_LDADD = $(HOME)/usr/local/lib/libmock_ccsp_common.la \
 AM_CFLAGS += -fprofile-arcs -ftest-coverage
 AM_CXXFLAGS += -fprofile-arcs -ftest-coverage
 notify_comp_gtest_bin_LDFLAGS += --coverage
+
