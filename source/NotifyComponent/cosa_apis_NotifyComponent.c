@@ -282,10 +282,12 @@ NotifyParam(char* PA_Name, char* param_name, char* add)
         ERR_CHK(rc);
         if((!ind) && (rc == EOK))
         {
-		AddNotifyParam(PA_Name, param_name);
+            AddNotifyParam(PA_Name, param_name);
         }
-	else
-		DelNotifyParam(PA_Name, param_name);
+        else
+        {
+            DelNotifyParam(PA_Name, param_name);
+        }
 }
 
 /*CID: 65190 & 58080 Missing return statement & type specifier*/
@@ -302,26 +304,26 @@ int ind = -1;
         len = strlen(param_name);
 
 	for(i=0;i<Ncount;i++)
-	{
-                rc = strcmp_s(param_name, len, Notify_param_arr[i].param_name, &ind);
-                ERR_CHK(rc);
-                if((!ind) && (rc == EOK))
-		{
-			Notify_param_arr[i].Notify_PA |= PA_to_Mask(PA_Name);	
+    {
+        rc = strcmp_s(param_name, len, Notify_param_arr[i].param_name, &ind);
+        ERR_CHK(rc);
+        if((!ind) && (rc == EOK))
+        {
+            Notify_param_arr[i].Notify_PA |= PA_to_Mask(PA_Name);
 			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s is added in the list by %s \n", param_name, PA_Name));
 			break;
 		}
 	}
 
 	if(i == Ncount)
-	{
-                rc = strcpy_s( Notify_param_arr[i].param_name, sizeof(Notify_param_arr[i].param_name),param_name);
-                if(rc != EOK)
-                {
-                    ERR_CHK(rc);
-                    return;
-                } 
-		Notify_param_arr[i].param_name[sizeof(Notify_param_arr[i].param_name)-1]=0;
+    {
+        rc = strcpy_s( Notify_param_arr[i].param_name, sizeof(Notify_param_arr[i].param_name),param_name);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return;
+        }
+        Notify_param_arr[i].param_name[sizeof(Notify_param_arr[i].param_name)-1]=0;
 
 		Notify_param_arr[i].Notify_PA = PA_to_Mask(PA_Name);
 		Ncount++;
@@ -332,17 +334,17 @@ int ind = -1;
 	PNotify_param temp=head;
 	PNotify_param prev=head;
 	BOOL found = 0;
-	size_t strsize = 0;
-        strsize = strlen(param_name);
+    size_t strsize = 0;
+    strsize = strlen(param_name);
 
 	while(temp!=NULL)
 	{
 		
-                rc = strcmp_s(param_name, strsize, temp->param_name, &ind);
-                ERR_CHK(rc);
-                if((!ind) && (rc == EOK))
-		{
-			temp->Notify_PA |= PA_to_Mask(PA_Name);
+        rc = strcmp_s(param_name, strsize, temp->param_name, &ind);
+        ERR_CHK(rc);
+        if((!ind) && (rc == EOK))
+        {
+            temp->Notify_PA |= PA_to_Mask(PA_Name);
 			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s is added in the list by %s \n", param_name, PA_Name));
 			found = 1;
 			break;	
@@ -351,20 +353,20 @@ int ind = -1;
 		temp = temp->next;
 	}
 
-	if(found == 0)
-	{
-		PNotify_param new_node = (PNotify_param) AnscAllocateMemory(sizeof(Notify_param));
+    if(found == 0)
+    {
+        PNotify_param new_node = (PNotify_param) AnscAllocateMemory(sizeof(Notify_param));
 
-		if(new_node)
-		{
-                        /* Coverity Fix CID: 139325,135494 BUFFERSIZE_WARNING,STRING_OVERFLOW */
-                        rc = strcpy_s(new_node->param_name, sizeof(new_node->param_name), param_name);
-                        if(rc != EOK)
-                        {
-                            ERR_CHK(rc);
-		            return;
-                        }
-			new_node->param_name[sizeof(new_node->param_name)-1] = '\0';
+        if(new_node)
+        {
+            /* Coverity Fix CID: 139325,135494 BUFFERSIZE_WARNING,STRING_OVERFLOW */
+            rc = strcpy_s(new_node->param_name, sizeof(new_node->param_name), param_name);
+            if(rc != EOK)
+            {
+                ERR_CHK(rc);
+                return;
+            }
+            new_node->param_name[sizeof(new_node->param_name)-1] = '\0';
 
 			new_node->Notify_PA = PA_to_Mask(PA_Name);
 			new_node->next = NULL;
@@ -384,7 +386,27 @@ int ind = -1;
 	}
 	UpdateNotifyParamFile(); //Write the notification parameter to file
 #endif
+    //NETAJI
+    int size;
+    parameterInfoStruct_t **parameter = NULL;
+    int ret = CcspBaseIf_getParameterNames(bus_handle,NULL,NULL,0, &size , &parameter);
+    if(ret == CCSP_SUCCESS  && size >= 1)
+    {
+        //ReadOnly parameters
+        if ((parameter[0]->writable != 0) && (strcmp("eRT.com.cisco.spvtg.ccsp.webpaagent", PA_Name) == 0))
+        {
+            int rc = rbusEvent_Subscribe(rbus_handle, param_name, valueChangeReceiveHandler, NULL, 0);
 
+            if (rc != RBUS_ERROR_SUCCESS)
+            {
+                CcspNotifyCompTraceInfo((" Parameter Name = %s subsciption failed!\n", param_name));
+            }
+            else
+            {
+                CcspNotifyCompTraceInfo((" Parameter Name %s subscribed\n", param_name));
+            }
+        }
+    }
 }
 
 /* CID:66977 & 69506 Missing return statement & type specifier*/
@@ -394,23 +416,28 @@ DelNotifyParam(char* PA_Name, char* param_name)
 
 errno_t                         rc                  = -1;
 int                             ind                 = -1;
-
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    rbusHandle_t rbus_handle = (rbusHandle_t)(bus_info->rbus_handle);
 #ifndef DYNAMIC_Notify
 
 	UINT i;
-        size_t len = 0;
-        len = strlen(param_name);
+	size_t len = 0;
+	len = strlen(param_name);
 
 	for(i=0;i<Ncount;i++)
 	{
-                rc = strcmp_s(param_name, len, Notify_param_arr[i].param_name, &ind);
-                ERR_CHK(rc);
-                if((!ind) && (rc == EOK))
+		rc = strcmp_s(param_name, len, Notify_param_arr[i].param_name, &ind);
+		ERR_CHK(rc);
+		if((!ind) && (rc == EOK))
 		{
-			Notify_param_arr[i].Notify_PA &= ~(PA_to_Mask(PA_Name));	
-			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s is deleted from the list by %s \n", param_name, PA_Name));
-			break;
-		}
+            Notify_param_arr[i].Notify_PA &= ~(PA_to_Mask(PA_Name));
+            CcspNotifyCompTraceInfo((" \n Notification : Parameter %s is deleted from the list by %s \n", param_name, PA_Name));
+            if (strcmp("eRT.com.cisco.spvtg.ccsp.webpaagent", PA_Name) == 0)
+            {
+                unsubscribeInThread(rbusHandle_t handle, param_name);
+            }
+            break;
+        }
 	}
 
 	if(i == Ncount)
@@ -424,13 +451,13 @@ int                             ind                 = -1;
 	PNotify_param temp=head;
 	PNotify_param prev=head;
 	size_t strsize = 0;
-        strsize = strlen(param_name);
+	strsize = strlen(param_name);
 
 	while(temp!=NULL)
 	{
-                rc = strcmp_s(param_name, strsize, temp->param_name, &ind);
-                ERR_CHK(rc);
-                if((!ind) && (rc == EOK))
+		rc = strcmp_s(param_name, strsize, temp->param_name, &ind);
+		ERR_CHK(rc);
+		if((!ind) && (rc == EOK))
 		{
 			temp->Notify_PA &= ~(PA_to_Mask(PA_Name));
 			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s is deleted from the list by %s \n", param_name, PA_Name));
@@ -461,6 +488,10 @@ int                             ind                 = -1;
 	}
 	else
 	{
+        if (strcmp("eRT.com.cisco.spvtg.ccsp.webpaagent", PA_Name) == 0)
+        {
+            unsubscribeInThread(rbusHandle_t handle, param_name);
+        }
 		UpdateNotifyParamFile(); //Write the notification parameter to file
 	}
 
@@ -513,25 +544,62 @@ UINT get_PA_Bits(const char *param_name)
     return 0;
 }
 
+typedef struct {
+    rbusHandle_t handle;
+    const char* eventName;
+} UnsubscribeArgs;
+
+void* unsubscribeThread(void* arg) {
+    UnsubscribeArgs* args = (UnsubscribeArgs*)arg;
+    rbusError_t rc = rbusEvent_Unsubscribe(args->handle, args->eventName);
+    if (rc != RBUS_ERROR_SUCCESS) {
+        CcspNotifyCompTraceInfo(("Unsubscribing failed with err:%d\n", rc));
+    }
+    free(args);
+    return NULL;
+}
+
+void unsubscribeInThread(rbusHandle_t handle, const char* eventName)
+{
+    if (handle && eventName)
+    {
+        pthread_t tid;
+        UnsubscribeArgs* args = malloc(sizeof(UnsubscribeArgs));
+        args->handle = handle;
+        args->eventName = eventName;
+
+        if (pthread_create(&tid, NULL, unsubscribeThread, args) != 0)
+        {
+            CcspNotifyCompTraceInfo(("Failed to create thread for unsubscribe\n"));
+            free(args);
+        }
+        else
+        {
+            pthread_detach(tid);
+        }
+    }
+}
+
 static void valueChangeReceiveHandler(rbusHandle_t handle, rbusEvent_t const* event, rbusEventSubscription_t* subscription)
 {
     int rc = RBUS_ERROR_SUCCESS;
 
     CcspNotifyCompTraceInfo((" Notification: Received ValueChange event for param %s\n", event->name));
 
-    if(subscription->userData)
+    if(subscription->userData == NULL)
+    {
+        char  str[500] = {0};
+        sprintf_s(str,sizeof(str),"%s,%u,%s,%s,%d", event->name, 0, rbusObject_GetValue(event->data, "value") ?
+                rbusValue_GetString(rbusObject_GetValue(event->data, "value"), NULL) : "NULL",
+                rbusObject_GetValue(event->data, "oldValue") ? rbusValue_GetString(rbusObject_GetValue(event->data, "oldValue"), NULL):"NULL",
+                rbusValue_GetType(rbusObject_GetValue(event->data, "value")));
+
+        Notify_To_PAs(get_PA_Bits(event->name), str);
+    }
+    else
     {
         Notify_To_PAs(get_PA_Bits(event->name), subscription->userData);
-    }
-
-    /* Unsubscribing*/
-    if (handle)
-    {
-        rbusEvent_Unsubscribe(handle, event->name);
-        if(rc != RBUS_ERROR_SUCCESS)
-        {
-            CcspNotifyCompTraceInfo(("Unsubscribing failed with err:%d\n", rc));
-        }
+        unsubscribeInThread(handle, event->name);
     }
 }
 
@@ -544,7 +612,7 @@ Validate_Param_Value(char* param_name, char* MsgStr)
     rbusValue_t value;
     char* st;
     errno_t rc = -1;
-
+    int ret = 0;
     if(strlen(MsgStr) < MAX_SIZE)
     {
         rc = strcpy_s(pString, MAX_SIZE, MsgStr);
