@@ -1,0 +1,51 @@
+{
+  "_comment": "Component Build Configuration for Coverity/Native Builds",
+  "_version": "2.0",
+  "_description": "Defines dependencies and build settings for the native component",
+  
+"dependencies": {
+    "_comment": "External repositories needed by this component",
+    "repos": [
+      {
+        "name": "Utopia",
+        "repo": "https://github.com/rdkcentral/utopia.git",
+        "branch": "develop",
+        "header_paths": [
+          { "source": "source/include/sysevent", "destination": "$HOME/usr/include/rdkb/sysevent" },
+          { "source": "source/include/syscfg", "destination": "$HOME/usr/include/rdkb/syscfg" },
+          { "source": "source/include", "destination": "$HOME/usr/include/rdkb/utctx" },
+          { "source": "source/include", "destination": "$HOME/usr/include/rdkb" },
+          { "source": "source/utapi/lib", "destination": "$HOME/usr/include/rdkb/utapi" },
+          { "source": "source/include/ulog", "destination": "$HOME/usr/include/rdkb/ulog" },
+          { "source": "source/util/utils", "destination": "$HOME/usr/include/rdkb" },
+          { "source": "source/sysevent/lib", "destination": "$HOME/usr/include/rdkb/sysevent" },
+          { "source": "source/utctx/lib", "destination": "$HOME/usr/include/rdkb/utctx" },
+          { "source": "source/util/print_uptime", "destination": "$HOME/usr/include/rdkb" }
+        ],
+        "build": {
+          "type": "script",
+          "script": "build_tools_workflows/cov_docker_script/common_external_build.sh"
+        }
+      }
+    ]
+  },
+  
+  "native_component": {
+    "name": "notify-component",
+    "include_path": "$HOME/usr/include/rdkb/",
+    "lib_output_path": "$HOME/usr/local/lib/",
+    "header_sources": [
+      { "source": "source/include", "destination": "$HOME/usr/include/rdkb" }
+    ],
+    "pre_build_commands": [
+      {
+        "description": "Generate dm_pack_datamodel.c from XML",
+        "command": "python3 $HOME/usr/include/rdkb/dm_pack_code_gen.py scripts/NotifyComponent.xml source/NotifyComponent/dm_pack_datamodel.c"
+      }
+    ],
+    "build": {
+      "type": "autotools",
+      "configure_options_file": "cov_docker_script/configure_options.conf"
+    }
+  }
+}
