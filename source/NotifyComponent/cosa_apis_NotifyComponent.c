@@ -990,6 +990,11 @@ void CreateEventHandlerThread()
 	if(res != 0) {
 	CcspNotifyCompTraceInfo(("Create Event_HandlerThread error %d\n", res));
 	}
+	
+	// Test coverity workflow for memory leak - CID: 139325
+	uint8_t* testBuf;
+    testBuf = (uint8_t*)calloc(16, sizeof(uint8_t));
+    (void)testBuf;
 
 }
 /**
