@@ -63,6 +63,11 @@ ssp_Mbi_MessageBusEngage
         return ANSC_STATUS_FAILURE;
     }
 
+    // Test coverity workflow for memory leak - CID: 139325
+	uint8_t* buffer;
+    buffer = (uint8_t*)malloc(sizeof(uint8_t));
+    (void)buffer;
+
     /* Connect to message bus */
     returnStatus = 
         CCSP_Message_Bus_Init
