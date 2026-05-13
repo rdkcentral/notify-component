@@ -197,10 +197,10 @@ NotifyComponent_SetParamStringValue
         if((!ind) && (rc == EOK))
         {
     	    if(!strstr(pString, "Passphrase"))
-		CcspNotifyCompTraceInfo((" \n Notification : < %s : %d > ParamName = %s \n",__FUNCTION__,__LINE__, pString));
+		CcspNotifyCompTraceDebug((" \n Notification : < %s : %d > ParamName = %s \n",__FUNCTION__,__LINE__, pString));
 
 		MsgPosttoQueue(pString);
-		CcspNotifyCompTraceInfo((" \n Notification : Msg Posted to queue\n"));
+		CcspNotifyCompTraceDebug((" \n Notification : Msg Posted to queue\n"));
 
 		return TRUE;
 	}
@@ -494,7 +494,7 @@ Find_Param(char* param_name, char* MsgStr)
 
 		if(param_name && strstr(Notify_param_arr[i].param_name, param_name))
 		{
-			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s found in the list \n", param_name));
+			CcspNotifyCompTraceDebug((" \n Notification : Parameter %s found in the list \n", param_name));
 			Notify_To_PAs(Notify_param_arr[i].Notify_PA,MsgStr);	
 			break;
 		}
@@ -502,7 +502,7 @@ Find_Param(char* param_name, char* MsgStr)
 
 	if(i == Ncount)
 	{
-		CcspNotifyCompTraceInfo((" \n Notification : Parameter %s not found in the list \n", param_name));
+		CcspNotifyCompTraceDebug((" \n Notification : Parameter %s not found in the list \n", param_name));
 
 	}
 #else
@@ -516,7 +516,7 @@ Find_Param(char* param_name, char* MsgStr)
 		
 		if(param_name && strstr(temp->param_name,param_name))
 		{
-			CcspNotifyCompTraceInfo((" \n Notification : Parameter %s found in the list \n", param_name));
+			CcspNotifyCompTraceDebug((" \n Notification : Parameter %s found in the list \n", param_name));
 			Notify_To_PAs(temp->Notify_PA, MsgStr); 
 			found = 1;
 			break;  
@@ -526,7 +526,7 @@ Find_Param(char* param_name, char* MsgStr)
 
 	if(found == 0)
 	{
-		CcspNotifyCompTraceInfo((" \n Notification : Parameter %s not found in the list \n", param_name));
+		CcspNotifyCompTraceDebug((" \n Notification : Parameter %s not found in the list \n", param_name));
 	}
 
 #endif
@@ -639,7 +639,7 @@ Notify_To_PAs(UINT PA_Bits, char* MsgStr)
 		    if (!clientMsg || (clientMsg && meshOffline && connectMsg) || (presence_notify))
 		    {
 		        //  printf(" \n Notification : call WEBPA notification  \n");
-		        CcspNotifyCompTraceInfo((" \n Notification : call WEBPA notification  \n"));
+		        CcspNotifyCompTraceDebug((" \n Notification : call WEBPA notification  \n"));
 
 		        ret = CcspBaseIf_setParameterValues(
 		                bus_handle,
@@ -667,7 +667,7 @@ Notify_To_PAs(UINT PA_Bits, char* MsgStr)
 		}
 #else
 	    //  printf(" \n Notification : call WEBPA notification  \n");
-	    CcspNotifyCompTraceInfo((" \n Notification : call WEBPA notification  \n"));
+	    CcspNotifyCompTraceDebug((" \n Notification : call WEBPA notification  \n"));
 
 		ret = CcspBaseIf_setParameterValues(
 		  bus_handle,
@@ -818,7 +818,7 @@ Notify_To_PAs(UINT PA_Bits, char* MsgStr)
 #if defined(FEATURE_SUPPORT_MESH)
     if(PA_Bits & NotifyMask_MESH)
     {
-        CcspNotifyCompTraceInfo((" \n Notification : call MESH notification  \n"));
+        CcspNotifyCompTraceDebug((" \n Notification : call MESH notification  \n"));
 
         rc = strcpy_s(compo, sizeof(compo),"eRT.com.cisco.spvtg.ccsp.meshagent");
         if (rc != EOK)
@@ -974,7 +974,7 @@ void* Event_HandlerThread(void *threadid)
                 if(!p_notify_param_name)
                     continue;
 		Find_Param(p_notify_param_name, setnotify_param);
-		CcspNotifyCompTraceInfo((" \n Notification : Msg processed\n"));
+		CcspNotifyCompTraceDebug((" \n Notification : Msg processed\n"));
         }
     } while (FOREVER());
 #ifndef UNIT_TEST_DOCKER_SUPPORT
