@@ -953,7 +953,7 @@ void* Event_HandlerThread(void *threadid)
 
         buffer[bytes_read] = '\0';
 		if(!strstr(buffer, "Passphrase"))
-		CcspNotifyCompTraceInfo((" \n Notification : Msg recieved from queue = %s\n", buffer));
+		CcspNotifyCompTraceDebug((" \n Notification : Msg recieved from queue = %s\n", buffer));
 
         {
 		char* p_notify_param_name;
