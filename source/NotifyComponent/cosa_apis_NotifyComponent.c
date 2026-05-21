@@ -502,7 +502,7 @@ Find_Param(char* param_name, char* MsgStr)
 
 	if(i == Ncount)
 	{
-		CcspNotifyCompTraceDebug((" \n Notification : Parameter %s not found in the list \n", param_name));
+		CcspNotifyCompTraceInfo((" \n Notification : Parameter %s not found in the list \n", param_name));
 
 	}
 #else
@@ -526,7 +526,7 @@ Find_Param(char* param_name, char* MsgStr)
 
 	if(found == 0)
 	{
-		CcspNotifyCompTraceDebug((" \n Notification : Parameter %s not found in the list \n", param_name));
+		CcspNotifyCompTraceInfo((" \n Notification : Parameter %s not found in the list \n", param_name));
 	}
 
 #endif
