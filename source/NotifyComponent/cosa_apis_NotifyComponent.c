@@ -481,9 +481,10 @@ UINT PA_to_Mask(char* PA_Name)
 }
 
 /* CID: 56982 & 61465 Missing return statement & type specifier*/
-void 
+UINT 
 Find_Param(char* param_name, char* MsgStr)
 {
+    UINT return_val = 1;
 #ifndef DYNAMIC_Notify
 
 	UINT i;
@@ -495,6 +496,7 @@ Find_Param(char* param_name, char* MsgStr)
 		if(param_name && strstr(Notify_param_arr[i].param_name, param_name))
 		{
 			CcspNotifyCompTraceDebug((" \n Notification : Parameter %s found in the list \n", param_name));
+            return_val = 0;
 			Notify_To_PAs(Notify_param_arr[i].Notify_PA,MsgStr);	
 			break;
 		}
@@ -517,6 +519,7 @@ Find_Param(char* param_name, char* MsgStr)
 		if(param_name && strstr(temp->param_name,param_name))
 		{
 			CcspNotifyCompTraceDebug((" \n Notification : Parameter %s found in the list \n", param_name));
+            return_val = 0;
 			Notify_To_PAs(temp->Notify_PA, MsgStr); 
 			found = 1;
 			break;  
@@ -531,6 +534,7 @@ Find_Param(char* param_name, char* MsgStr)
 
 #endif
 
+    return return_val;
 }
 
 /* CID: 72649 & 66310 Missing return statement & type specifier*/
@@ -973,8 +977,8 @@ void* Event_HandlerThread(void *threadid)
 		p_notify_param_name = strtok_s(buffer, &len, ",", &st);
                 if(!p_notify_param_name)
                     continue;
-		Find_Param(p_notify_param_name, setnotify_param);
-		CcspNotifyCompTraceInfo((" \n Notification : Msg processed = %s\n", setnotify_param));
+		UINT return_val = Find_Param(p_notify_param_name, setnotify_param);
+		(return_val == 0) && CcspNotifyCompTraceInfo((" \n Notification : Msg processed = %s\n", setnotify_param));
         }
     } while (FOREVER());
 #ifndef UNIT_TEST_DOCKER_SUPPORT
