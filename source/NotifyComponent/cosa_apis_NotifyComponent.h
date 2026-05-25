@@ -122,7 +122,7 @@ void DelNotifyParam(char* PA_Name, char* param_name);
 /*CID: 56437 Parse warning - No Definition*/
 //Print_Notify_Arr();
 /*CID 56554: Parse warning */
-void Find_Param(char* param_name, char* MsgStr);
+UINT Find_Param(char* param_name, char* MsgStr);
 /* CID 61319: Parse warning*/
 void Notify_To_PAs(UINT PA_Bits, char* MsgStr);
 void ReloadNotifyParam();
