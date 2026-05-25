@@ -978,7 +978,8 @@ void* Event_HandlerThread(void *threadid)
                 if(!p_notify_param_name)
                     continue;
 		UINT return_val = Find_Param(p_notify_param_name, setnotify_param);
-		(return_val == 0) && CcspNotifyCompTraceInfo((" \n Notification : Msg processed = %s\n", setnotify_param));
+		if (return_val == 0)
+            CcspNotifyCompTraceInfo((" \n Notification : Msg processed = %s\n", setnotify_param));
         }
     } while (FOREVER());
 #ifndef UNIT_TEST_DOCKER_SUPPORT
