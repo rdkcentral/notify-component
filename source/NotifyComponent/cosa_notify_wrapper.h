@@ -92,7 +92,7 @@ extern   char*                      g_NotifyCompName;
     CcspTraceNotice2(g_NotifyCompName, msg)
 
 #define  CcspNotifyCompTraceDebug(msg)                             \
-    CcspTraceInfo2(g_NotifyCompName, msg)
+    CcspTraceDebug2(g_NotifyCompName, msg)
 
 #define  CcspNotifyCompTraceInfo(msg)                              \
     CcspTraceInfo2(g_NotifyCompName, msg)
